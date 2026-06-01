@@ -71,32 +71,7 @@ function Estrela({ top, left, tamanho, duracao, atraso }) {
   );
 }
 
-const secoes = [
-  {
-    id: '02',
-    rotulo: 'CONTEXTO',
-    titulo: 'O mercado real está no downstream',
-    texto:
-      'Dado espacial é abundante e gratuito. Mas transformá-lo em decisão sob recurso limitado continua sendo capacidade de especialista. O Orbital Academy democratiza isso.',
-    tags: ['Bizu Space', 'Safe on Orbit', 'Visiona'],
-  },
-  {
-    id: '03',
-    rotulo: 'PROBLEMA PRÁTICO',
-    titulo: 'Quem decide o que fazer com o satélite?',
-    texto:
-      'Para o pequeno produtor rural, para a Defesa Civil, para o agente de saúde em campo — o satélite ainda parece distante. A pergunta não é "como vemos?" — é "quem decide?"',
-    tags: [],
-  },
-  {
-    id: '04',
-    rotulo: 'TESE DA SOLUÇÃO',
-    titulo: 'Decisão com dado espacial',
-    texto:
-      'Não acontece ao ver um mapa colorido. Acontece quando alguém escolhe, sob recurso limitado, qual ação tomar primeiro — e mede o resultado.',
-    tags: [],
-  },
-];
+const secoes = [];
 
 function SecaoPrincipal({ atraso = 0 }) {
   const animY = useRef(new Animated.Value(24)).current;
@@ -306,7 +281,6 @@ function ItemEtapa({ numero, rotulo, atraso = 0 }) {
 
 export default function Home() {
   const [ativo, setAtivo] = useState('home');
-  const [sidebarAberta, setSidebarAberta] = useState(false);
   const { width, height } = useWindowDimensions();
   const eMobile = width < 768;
   const mostrarHome = ativo === 'home';
@@ -315,12 +289,7 @@ export default function Home() {
   return (
     <View style={estilos.container}>
       {!eMobile && (
-        <Sidebar
-          ativo={ativo}
-          aoSelecionar={setAtivo}
-          aberta={sidebarAberta}
-          aoToggle={() => setSidebarAberta((v) => !v)}
-        />
+        <Sidebar ativo={ativo} aoSelecionar={setAtivo} />
       )}
 
       <View style={estilos.conteudo}>
@@ -334,11 +303,6 @@ export default function Home() {
         {/* Cabeçalho */}
         <View style={estilos.cabecalho}>
           <View style={estilos.cabecalhoEsquerda}>
-            {!eMobile && !sidebarAberta && (
-              <Pressable onPress={() => setSidebarAberta(true)} style={estilos.botaoAbrirSidebar}>
-                <Text style={estilos.botaoAbrirTexto}>☰</Text>
-              </Pressable>
-            )}
             <View style={estilos.badgePill}>
               <View style={estilos.badgePonto} />
               <Text style={estilos.badgeTexto}>Global Solution FIAP · Space Connect · 2026.1</Text>
