@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useBreakpoint } from '../styles/breakpoint';
 
 const LARGURA_FECHADA = 56;
 const LARGURA_ABERTA = 240;
+const LARGURA_DRAWER = 280;
 
 const secoes = [
   {
@@ -23,9 +25,24 @@ const secoes = [
   },
 ];
 
-export default function Sidebar({ ativo = 'home', aoSelecionar }) {
+export default function Sidebar({ ativo = 'home', aoSelecionar, aberto = false, aoFechar }) {
+  const { isMobile } = useBreakpoint();
+
+  // Desktop: largura/opacidade animadas no hover.
   const animLargura = useRef(new Animated.Value(LARGURA_FECHADA)).current;
   const animOpacidade = useRef(new Animated.Value(0)).current;
+  // Mobile: drawer deslizante controlado por `aberto`.
+  const animTranslate = useRef(new Animated.Value(-LARGURA_DRAWER)).current;
+
+  useEffect(() => {
+    if (!isMobile) return;
+    Animated.timing(animTranslate, {
+      toValue: aberto ? 0 : -LARGURA_DRAWER,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [isMobile, aberto]);
 
   function aoEntrar() {
     Animated.parallel([
@@ -60,20 +77,36 @@ export default function Sidebar({ ativo = 'home', aoSelecionar }) {
     ]).start();
   }
 
+  // No mobile o texto fica sempre visível; no desktop segue a opacidade do hover.
+  const opacidadeTexto = isMobile ? 1 : animOpacidade;
+
+  // Seleciona um item e, no mobile, fecha o drawer em seguida.
+  function selecionar(chave) {
+    aoSelecionar?.(chave);
+    if (isMobile) aoFechar?.();
+  }
+
+  const containerProps = isMobile
+    ? {
+        style: [estilos.container, estilos.drawer, { transform: [{ translateX: animTranslate }] }],
+        pointerEvents: aberto ? 'auto' : 'none',
+      }
+    : {
+        style: [estilos.container, { width: animLargura }],
+        onMouseEnter: aoEntrar,
+        onMouseLeave: aoSair,
+      };
+
   return (
-    <Animated.View
-      style={[estilos.container, { width: animLargura }]}
-      onMouseEnter={aoEntrar}
-      onMouseLeave={aoSair}
-    >
+    <Animated.View {...containerProps}>
       {/* Cabeçalho */}
-      <Pressable style={estilos.linha} onPress={() => aoSelecionar?.('home')}>
+      <Pressable style={estilos.linha} onPress={() => selecionar('home')}>
         <View style={estilos.iconeSlot}>
           <View style={estilos.logoCirculo}>
             <View style={estilos.logoPonto} />
           </View>
         </View>
-        <Animated.View style={[estilos.textoSlot, { opacity: animOpacidade }]}>
+        <Animated.View style={[estilos.textoSlot, { opacity: opacidadeTexto }]}>
           <Text style={estilos.cabecalhoNome} numberOfLines={1}>Orbital Academy</Text>
           <Text style={estilos.cabecalhoSub} numberOfLines={1}>Engenharia de Software · 3º sem</Text>
           <View style={estilos.statusBadge}>
@@ -91,7 +124,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar }) {
           <View key={secao.rotulo} style={estilos.secao}>
 
             {/* Rótulo da seção — alinhado com os textos */}
-            <Animated.View style={[estilos.secaoRotuloRow, { opacity: animOpacidade }]}>
+            <Animated.View style={[estilos.secaoRotuloRow, { opacity: opacidadeTexto }]}>
               <View style={estilos.iconeSlot} />
               <Text style={estilos.secaoRotulo}>{secao.rotulo}</Text>
             </Animated.View>
@@ -101,7 +134,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar }) {
               return (
                 <Pressable
                   key={item.chave}
-                  onPress={() => aoSelecionar?.(item.chave)}
+                  onPress={() => selecionar(item.chave)}
                   style={({ pressed }) => [
                     estilos.linha,
                     estilos.linhaNave,
@@ -123,7 +156,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar }) {
                   </View>
 
                   {/* Texto — aparece no hover */}
-                  <Animated.View style={[estilos.textoSlot, { opacity: animOpacidade }]}>
+                  <Animated.View style={[estilos.textoSlot, { opacity: opacidadeTexto }]}>
                     <Text style={[estilos.itemTitulo, estaAtivo && estilos.itemTituloAtivo]} numberOfLines={1}>
                       {item.titulo}
                     </Text>
@@ -131,7 +164,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar }) {
                   </Animated.View>
 
                   {item.badge != null && (
-                    <Animated.View style={[estilos.badge, { opacity: animOpacidade }]}>
+                    <Animated.View style={[estilos.badge, { opacity: opacidadeTexto }]}>
                       <Text style={estilos.badgeTexto}>{item.badge}</Text>
                     </Animated.View>
                   )}
@@ -149,7 +182,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar }) {
           <View style={estilos.iconeSlot}>
             <Ionicons name="log-in-outline" size={18} color="#64748B" />
           </View>
-          <Animated.View style={[estilos.textoSlot, { opacity: animOpacidade }]}>
+          <Animated.View style={[estilos.textoSlot, { opacity: opacidadeTexto }]}>
             <Text style={estilos.loginTitulo} numberOfLines={1}>Faça login</Text>
             <Text style={estilos.loginSub} numberOfLines={1}>Para acessar sua conta</Text>
           </Animated.View>
@@ -166,6 +199,15 @@ const estilos = StyleSheet.create({
     borderRightColor: '#ffffff0D',
     overflow: 'hidden',
     flexDirection: 'column',
+  },
+  // Variante mobile: overlay deslizante por cima do conteúdo.
+  drawer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: LARGURA_DRAWER,
+    zIndex: 50,
   },
 
   // Layout de linha: ícone fixo + texto animado
