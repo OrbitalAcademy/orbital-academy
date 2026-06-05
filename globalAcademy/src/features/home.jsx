@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -196,7 +197,6 @@ function SecaoPrincipal({ atraso = 0, alturaJanela = 800 }) {
 
       <View style={estilos.dossieTopo}>
         <Text style={estilos.dossieRotuloEsquerda}>O QUE É O ORBITAL ACADEMY</Text>
-        <Text style={estilos.dossieRotuloDireita}>01 / DOSSIÊ</Text>
       </View>
 
       <Text style={[estilos.dossieTituloGrande, isMobile && estilos.dossieTituloGrandeMobile]}>
@@ -362,7 +362,6 @@ function SecaoTese() {
       {/* Topo */}
       <View style={estilos.dossieTopo}>
         <Text style={estilos.dossieRotuloEsquerda}>TESE E ARQUITETURA</Text>
-        <Text style={estilos.dossieRotuloDireita}>02 / TESE</Text>
       </View>
 
       <View style={estilos.dossieCardTopo}>
@@ -390,7 +389,7 @@ function SecaoTese() {
   );
 }
 
-// Seção 04 — os componentes da arquitetura (cards lado a lado).
+// Seção 04 — os componentes da arquitetura
 const componentesData = [
   {
     id: 'console',
@@ -406,9 +405,8 @@ const componentesData = [
     icone: 'analytics-outline',
     titulo: '0.1 - Motor de Decisão',
     tagline: 'Modelo de ML tradicional · previsão de risco',
-    descricao: `O cérebro preditivo do sistema. Random Forest e Regressão Logística são treinados sobre dados reais de NASA Earthdata, INMET e INPE — NDVI, temperatura de superfície, déficit hídrico, uso da terra. 
-    \nO modelo prevê o risco de perda por área com métricas claras (F1 ponderada e AUC ROC) e entrega as três variáveis que mais pesam em cada previsão, com porcentagem de importância. 
-    \nIsso elimina a caixa-preta: o operador sabe exatamente por que o sistema apontou aquela área. Os dois modelos são comparados explicitamente para validação científica quem performa melhor em quais condições, e por quê.`,
+    descricao: `O cérebro preditivo do sistema. Random Forest e Regressão Logística treinados sobre dados reais de NASA Earthdata, INMET e INPE — NDVI, temperatura de superfície e déficit hídrico. 
+    \nO modelo prevê risco de perda por área com F1 ponderada e AUC ROC, entregando as três variáveis que mais pesam em cada previsão. Os dois modelos são comparados explicitamente para validação científica, eliminando a caixa-preta.`,
   },
   {
     id: 'otimizador',
@@ -421,9 +419,8 @@ const componentesData = [
     icone: 'camera-outline',
     titulo: 'Câmera de Validação',
     tagline: 'Visão computacional · ground-truth em campo',
-    descricao: `O operador aponta a câmera do notebook ou do celular para uma amostra da cultura e o sistema classifica em tempo real saudável, estresse hídrico, praga, doença com o percentual de confiança de cada classe. 
-    \nEsse resultado valida ou corrige o que o satélite previu, fechando o loop de ground-truth que qualquer modelo de ML precisa para ser confiável ao longo do tempo. 
-    \nA inferência roda localmente no dispositivo: sem câmera funcionando, sem servidor. Isso é importante para o cenário de campo. Se não há rede, a câmera ainda funciona e o resultado é enfileirado para sincronização posterior.`,
+    descricao: `O operador aponta a câmera para uma amostra da cultura e o sistema classifica em tempo real: saudável, estresse hídrico, praga ou doença com percentual de confiança por classe. 
+    \nO resultado valida ou corrige a previsão do satélite, fechando o loop de ground-truth. A inferência roda localmente no dispositivo: sem rede, a câmera ainda funciona e sincroniza quando a conexão voltar.`,
   },
 ];
 
@@ -468,7 +465,6 @@ function CardArquitetura({ item, isMobile }) {
         <Ionicons name="arrow-forward-outline" size={14} color="#208AEF" />
       </View>
 
-      {/* Overlay com a descrição (fade no hover) */}
       <Animated.View pointerEvents="none" style={[estilos.arqCardOverlay, { opacity: animOverlay }]}>
         <Text style={estilos.arqCardRotulo}>{item.titulo}</Text>
         <Text style={estilos.arqCardDescricao}>{item.descricao}</Text>
@@ -504,6 +500,101 @@ function SecaoArquitetura() {
   );
 }
 
+// Seção 05 — integrantes (carrossel). Preencher `linkedin` de cada pessoa.
+const TIME_CARD_W = 440;
+const TIME_GAP = 20;
+
+const timeData = [
+  { id: 'p1', nome: 'Abner de Paiva Barbosa', cargo: 'Associate Software Developer @ NTT Data', linkedin: 'https://www.linkedin.com/in/abner-pb/' },
+  { id: 'p2', nome: 'Beatriz Vieira de Novais', cargo: 'DevOps Engineer Intern @ Vivo', linkedin: 'https://www.linkedin.com/in/beatriznovais/' },
+  { id: 'p3', nome: 'Eduardo Dallabella Lima', cargo: 'Software Developer @ FIAP', linkedin: 'https://www.linkedin.com/in/eduardo-dallabella-lima/' },
+  { id: 'p4', nome: 'Heloísa Real', cargo: 'Intern @ Itaú', linkedin: 'https://www.linkedin.com/in/heloisareal/?locale=en' },
+  { id: 'p5', nome: 'Mariana Neugebauer Dourado', cargo: 'Developer Intern @ Integration Consulting', linkedin: 'https://www.linkedin.com/in/neugema/' },
+];
+
+function CarrosselTime({ pessoas, indice, animX }) {
+  return (
+    <View style={estilos.carrosselOverflow}>
+      <Animated.View style={[estilos.timeTrilha, { transform: [{ translateX: animX }] }]}>
+        {pessoas.map((p, i) => {
+          const ativo = i === indice;
+          return (
+            <View
+              key={p.id}
+              style={[
+                estilos.timeCard,
+                !ativo && estilos.timeCardInativo,
+                // Borra todos os cards que não estão em foco (web).
+                !ativo && Platform.OS === 'web' && { filter: 'blur(4px)' },
+              ]}
+            >
+              <View style={estilos.timeFotoBox}>
+                <Ionicons name="person-outline" size={48} color="#334155" />
+              </View>
+              <View style={estilos.timeFooter}>
+                <View style={estilos.timeFooterTexto}>
+                  <Text style={estilos.timeNome} numberOfLines={1}>{p.nome}</Text>
+                  <Text style={estilos.timeCargo} numberOfLines={1}>{p.cargo}</Text>
+                </View>
+                <Pressable
+                  style={estilos.timeLinkedin}
+                  hitSlop={8}
+                  onPress={() => { if (p.linkedin) Linking.openURL(p.linkedin); }}
+                >
+                  <Ionicons name="logo-linkedin" size={20} color="#208AEF" />
+                </Pressable>
+              </View>
+            </View>
+          );
+        })}
+      </Animated.View>
+    </View>
+  );
+}
+
+function SecaoIntegrantes() {
+  const { isMobile } = useBreakpoint();
+  const [indice, setIndice] = useState(0);
+  const animX = useRef(new Animated.Value(0)).current;
+  const passo = TIME_CARD_W + TIME_GAP;
+
+  function irPara(novoIndice) {
+    const total = timeData.length;
+    const idx = ((novoIndice % total) + total) % total;
+    Animated.timing(animX, {
+      toValue: idx * -passo,
+      duration: 420,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+    setIndice(idx);
+  }
+
+  return (
+    <View style={[estilos.secao05Wrapper, isMobile && estilos.secao05WrapperMobile]}>
+
+      {/* Cabeçalho — parágrafos próximos */}
+      <View style={estilos.timeHeader}>
+        <View style={estilos.dossieTopo}>
+          <Text style={estilos.dossieRotuloEsquerda}>ORBITAL ACADEMY TIME</Text>
+          <Text style={estilos.dossieRotuloDireita}>05 / TIME</Text>
+        </View>
+        <Text style={[estilos.dossieTituloGrande, isMobile && estilos.dossieTituloGrandeMobile]}>
+          Quem está nesta missão?
+        </Text>
+        <Text style={estilos.dossieSubtitulo}>
+          Cinco pessoas, oito matérias, uma arquitetura.
+        </Text>
+      </View>
+
+      {/* Navegação + carrossel (mesma mecânica de "Como funciona?") */}
+      <CarrosselNav slides={timeData} indice={indice} irPara={irPara} />
+      <CarrosselTime pessoas={timeData} indice={indice} animX={animX} />
+
+    </View>
+  );
+}
+
 export default function Home() {
   const [ativo, setAtivo] = useState('home');
   const [menuAberto, setMenuAberto] = useState(false);
@@ -529,19 +620,25 @@ export default function Home() {
           ))}
         </View>
 
-        <View style={estilos.cabecalho}>
-          {isMobile && (
-            <Pressable style={estilos.hamburguer} onPress={() => setMenuAberto(true)} hitSlop={8}>
-              <Ionicons name="menu-outline" size={24} color="#CBD5E1" />
-            </Pressable>
-          )}
-          <View style={estilos.cabecalhoEsquerda}>
-            <View style={estilos.badgePill}>
-              <View style={estilos.badgePonto} />
-              <Text style={estilos.badgeTexto}>Global Solution FIAP · Space Connect · 2026.1</Text>
-            </View>
+        {/* Barra global: só na home (badge) ou no mobile (botão de menu).
+            Fora disso, cada tela traz o próprio cabeçalho. */}
+        {(mostrarHome || isMobile) && (
+          <View style={estilos.cabecalho}>
+            {isMobile && (
+              <Pressable style={estilos.hamburguer} onPress={() => setMenuAberto(true)} hitSlop={8}>
+                <Ionicons name="menu-outline" size={24} color="#CBD5E1" />
+              </Pressable>
+            )}
+            {mostrarHome && (
+              <View style={estilos.cabecalhoEsquerda}>
+                <View style={estilos.badgePill}>
+                  <View style={estilos.badgePonto} />
+                  <Text style={estilos.badgeTexto}>Global Solution FIAP · Space Connect · 2026.1</Text>
+                </View>
+              </View>
+            )}
           </View>
-        </View>
+        )}
 
         {mostrarHome ? (
           <ScrollView
@@ -608,6 +705,7 @@ export default function Home() {
             </View>
             <SecaoTese />
             <SecaoArquitetura />
+            <SecaoIntegrantes />
           </ScrollView>
         ) : (
           <View style={estilos.telaVazia}>
@@ -804,13 +902,6 @@ const estilos = StyleSheet.create({
     fontSize: 11,
     fontFamily: fonts.bodyBold,
     letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  dossieRotuloDireita: {
-    color: '#334155',
-    fontSize: 11,
-    fontFamily: fonts.bodySemiBold,
-    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   dossieTituloGrande: {
@@ -1047,7 +1138,7 @@ const estilos = StyleSheet.create({
     fontFamily: fonts.bodySemiBold,
   },
 
-  // ---- Seção 04 ----
+  // --- Seção 04 --- (Arquitetura de Solução)
   secao04Wrapper: {
     justifyContent: 'center',
     marginTop: 120,
@@ -1256,6 +1347,78 @@ const estilos = StyleSheet.create({
   parallaxImgMobile: {
     height: 440,
     marginTop: -60,
+  },
+
+// --- Seção 05 --- Integrantes (carrossel)
+  secao05Wrapper: {
+    marginTop: 160,
+    paddingHorizontal: 64,
+    paddingBottom: 120,
+    gap: 28,
+  },
+  timeHeader: {
+    gap: 12,
+  },
+  timeTrilha: {
+    flexDirection: 'row',
+    gap: TIME_GAP,
+  },
+  timeCard: {
+    width: TIME_CARD_W,
+    height: 460,
+    borderRadius: 14,
+    backgroundColor: '#0a0f1a',
+    borderWidth: 1,
+    borderColor: '#ffffff0D',
+    overflow: 'hidden',
+  },
+  timeCardInativo: {
+    opacity: 0.5,
+  },
+  timeFotoBox: {
+    flex: 1,
+    backgroundColor: '#0D1117',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    backgroundColor: '#0D1117',
+  },
+  timeFooterTexto: {
+    flex: 1,
+    gap: 4,
+  },
+  timeNome: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontFamily: fonts.body,
+  },
+  timeCargo: {
+    color: '#E2E8F0',
+    fontSize: 15,
+    fontFamily: fonts.titleBold,
+    lineHeight: 20,
+  },
+  timeLinkedin: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#208AEF30',
+    backgroundColor: '#208AEF10',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Variantes mobile (seção 05)
+  secao05WrapperMobile: {
+    marginTop: 80,
+    paddingHorizontal: 20,
+    paddingBottom: 80,
   },
 
   telaVazia: {
