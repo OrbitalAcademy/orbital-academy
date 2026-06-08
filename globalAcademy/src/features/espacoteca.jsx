@@ -1,17 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../styles/fonts';
 import { useBreakpoint } from '../styles/breakpoint';
+import { useEntradaAnimada } from '../hooks/useEntradaAnimada';
 import AcessoBloqueado from '../components/acessoBloqueado';
+import EstadoVazioTela from '../components/estadoVazioTela';
 
 // --- Abas do topo ---
 const ABAS = ['Tudo', 'Trilhas', 'Glossário', 'Estudos', 'Leituras'];
@@ -312,36 +306,13 @@ function ConteudoComLogin({ isMobile, aba }) {
   );
 }
 
-function ConteudoVazio() {
-  return (
-    <View style={estilos.vazioArea}>
-      <View style={estilos.vazioCaixa}>
-        <Ionicons name="library-outline" size={34} color="#334155" />
-        <Text style={estilos.vazioTitulo}>Espaçoteca bloqueada</Text>
-        <Text style={estilos.vazioSub}>
-          Faça login para abrir o acervo: trilhas de aprendizado, fontes de dado, glossário, estudos de caso e leituras essenciais.
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 export default function Espacoteca({ logado = false, aoPedirLogin, aoPedirCadastro }) {
   const { isMobile } = useBreakpoint();
   const [aba, setAba] = useState('Tudo');
-
-  const animOp = useRef(new Animated.Value(0)).current;
-  const animY = useRef(new Animated.Value(16)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(animOp, { toValue: 1, duration: 420, useNativeDriver: true }),
-      Animated.timing(animY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
+  const entrada = useEntradaAnimada();
 
   return (
-    <Animated.View style={[estilos.container, { opacity: animOp, transform: [{ translateY: animY }] }]}>
+    <Animated.View style={[estilos.container, entrada]}>
       {/* Cabeçalho próprio: abas + contagem */}
       <View style={[estilos.cabecalho, isMobile && estilos.cabecalhoMobile]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.abas}>
@@ -358,7 +329,15 @@ export default function Espacoteca({ logado = false, aoPedirLogin, aoPedirCadast
       </View>
 
       <AcessoBloqueado logado={logado} aoPedirLogin={aoPedirLogin} aoPedirCadastro={aoPedirCadastro}>
-        {logado ? <ConteudoComLogin isMobile={isMobile} aba={aba} /> : <ConteudoVazio />}
+        {logado ? (
+          <ConteudoComLogin isMobile={isMobile} aba={aba} />
+        ) : (
+          <EstadoVazioTela
+            icone="library-outline"
+            titulo="Espaçoteca bloqueada"
+            sub="Faça login para abrir o acervo: trilhas de aprendizado, fontes de dado, glossário, estudos de caso e leituras essenciais."
+          />
+        )}
       </AcessoBloqueado>
     </Animated.View>
   );
@@ -586,10 +565,4 @@ const estilos = StyleSheet.create({
     backgroundColor: '#0A0F1A',
   },
   emBreveTexto: { color: '#475569', fontSize: 14, fontFamily: fonts.bodySemiBold },
-
-  // --- Estado vazio (deslogado) ---
-  vazioArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  vazioCaixa: { maxWidth: 400, alignItems: 'center', gap: 12 },
-  vazioTitulo: { color: '#94A3B8', fontSize: 16, fontFamily: fonts.bodySemiBold, textAlign: 'center' },
-  vazioSub: { color: '#64748B', fontSize: 13, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },
 });

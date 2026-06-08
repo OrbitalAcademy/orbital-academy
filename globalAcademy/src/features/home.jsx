@@ -755,7 +755,6 @@ export default function Home() {
         ) : ativo === 'login' ? (
           <Login
             aoEntrar={aoEntrar}
-            aoVoltar={() => setAtivo('home')}
             aoPedirCadastro={() => setAtivo('cadastro')}
           />
         ) : ativo === 'cadastro' ? (

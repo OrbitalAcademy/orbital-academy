@@ -1,63 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../styles/fonts';
 import { useBreakpoint } from '../styles/breakpoint';
 import { autenticar, salvarSessao } from '../services/sessao';
+import { authStyles } from '../styles/auth';
+import CampoFormulario from '../components/campoFormulario';
+import FundoEstrelas from '../components/fundoEstrelas';
 
-
-const estrelas = Array.from({ length: 40 }, (_, i) => ({
-  id: i,
-  top: Math.random() * 100,
-  left: Math.random() * 100,
-  tamanho: Math.random() * 1.6 + 0.6,
-  opacidade: Math.random() * 0.4 + 0.1,
-}));
-
-function Campo({ rotulo, icone, valor, aoMudar, placeholder, teclado, senha = false }) {
-  const [focado, setFocado] = useState(false);
-  const [mostrar, setMostrar] = useState(false);
-
-  return (
-    <View style={estilos.campo}>
-      <Text style={estilos.campoRotulo}>{rotulo}</Text>
-      <View style={[estilos.campoCaixa, focado && estilos.campoCaixaFocado]}>
-        <Ionicons name={icone} size={17} color={focado ? '#38BDF8' : '#64748B'} />
-        <TextInput
-          value={valor}
-          onChangeText={aoMudar}
-          placeholder={placeholder}
-          placeholderTextColor="#475569"
-          keyboardType={teclado}
-          autoCapitalize="none"
-          secureTextEntry={senha && !mostrar}
-          onFocus={() => setFocado(true)}
-          onBlur={() => setFocado(false)}
-          style={estilos.campoInput}
-        />
-        {senha && (
-          <Pressable onPress={() => setMostrar((v) => !v)} hitSlop={8}>
-            <Ionicons
-              name={mostrar ? 'eye-off-outline' : 'eye-outline'}
-              size={17}
-              color="#64748B"
-            />
-          </Pressable>
-        )}
-      </View>
-    </View>
-  );
-}
-
-export default function Login({ aoEntrar, aoVoltar, aoPedirCadastro }) {
+export default function Login({ aoEntrar, aoPedirCadastro }) {
   const { isMobile } = useBreakpoint();
 
   const [email, setEmail] = useState('');
@@ -88,41 +39,22 @@ export default function Login({ aoEntrar, aoVoltar, aoPedirCadastro }) {
   }
 
   return (
-    <View style={estilos.container}>
-      <Animated.View style={[estilos.fundo, { opacity: animOp }]} pointerEvents="none">
-        {estrelas.map((e) => (
-          <View
-            key={e.id}
-            style={{
-              position: 'absolute',
-              top: `${e.top}%`,
-              left: `${e.left}%`,
-              width: e.tamanho,
-              height: e.tamanho,
-              borderRadius: e.tamanho / 2,
-              backgroundColor: '#ffffff',
-              opacity: e.opacidade,
-            }}
-          />
-        ))}
-
-        <View style={[estilos.linhaTrajetoria, { top: '34%', transform: [{ rotate: '-24deg' }] }]} />
-        <View style={[estilos.linhaTrajetoria, { top: '64%', transform: [{ rotate: '18deg' }] }]} />
-      </Animated.View>
+    <View style={authStyles.container}>
+      <FundoEstrelas opacity={animOp} />
 
       <Animated.View
         style={[
-          estilos.conteudo,
-          isMobile && estilos.conteudoMobile,
+          authStyles.conteudo,
+          isMobile && authStyles.conteudoMobile,
           { opacity: animOp, transform: [{ translateX: animX }] },
         ]}
       >
-        <Text style={estilos.eyebrow}>ACESSO · USUÁRIO</Text>
-        <Text style={estilos.titulo}>Entrar nesta Missão?</Text>
-        <Text style={estilos.subtitulo}>Use suas credenciais da missão para continuar.</Text>
+        <Text style={authStyles.eyebrow}>ACESSO · USUÁRIO</Text>
+        <Text style={authStyles.titulo}>Entrar nesta Missão?</Text>
+        <Text style={authStyles.subtitulo}>Use suas credenciais da missão para continuar.</Text>
 
-        <View style={estilos.form}>
-          <Campo
+        <View style={authStyles.form}>
+          <CampoFormulario
             rotulo="E-mail"
             icone="mail-outline"
             valor={email}
@@ -130,7 +62,7 @@ export default function Login({ aoEntrar, aoVoltar, aoPedirCadastro }) {
             placeholder="nome@teste.com"
             teclado="email-address"
           />
-          <Campo
+          <CampoFormulario
             rotulo="Senha"
             icone="lock-closed-outline"
             valor={senha}
@@ -140,9 +72,9 @@ export default function Login({ aoEntrar, aoVoltar, aoPedirCadastro }) {
           />
 
           {erro ? (
-            <View style={estilos.erroCaixa}>
+            <View style={authStyles.erroCaixa}>
               <Ionicons name="alert-circle-outline" size={15} color="#EF4444" />
-              <Text style={estilos.erroTexto}>{erro}</Text>
+              <Text style={authStyles.erroTexto}>{erro}</Text>
             </View>
           ) : null}
 
@@ -154,22 +86,22 @@ export default function Login({ aoEntrar, aoVoltar, aoPedirCadastro }) {
               <Text style={estilos.checkboxTexto}>Manter conectado</Text>
             </Pressable>
             <Pressable hitSlop={6}>
-              <Text style={estilos.link}>Esqueci a senha</Text>
+              <Text style={authStyles.link}>Esqueci a senha</Text>
             </Pressable>
           </View>
 
           <Pressable
-            style={({ pressed }) => [estilos.btnPrimario, pressed && estilos.btnPrimarioPressed]}
+            style={({ pressed }) => [authStyles.btnPrimario, pressed && authStyles.btnPrimarioPressed]}
             onPress={entrar}
           >
-            <Text style={estilos.btnPrimarioTexto}>Acessar console</Text>
+            <Text style={authStyles.btnPrimarioTexto}>Acessar console</Text>
             <Ionicons name="arrow-forward-outline" size={18} color="#050810" />
           </Pressable>
 
-          <View style={estilos.rodape}>
-            <Text style={estilos.rodapeTexto}>Primeiro acesso? </Text>
+          <View style={authStyles.rodape}>
+            <Text style={authStyles.rodapeTexto}>Primeiro acesso? </Text>
             <Pressable hitSlop={6} onPress={() => aoPedirCadastro?.()}>
-              <Text style={estilos.link}>Criar conta</Text>
+              <Text style={authStyles.link}>Criar conta</Text>
             </Pressable>
           </View>
         </View>
@@ -179,111 +111,13 @@ export default function Login({ aoEntrar, aoVoltar, aoPedirCadastro }) {
 }
 
 const estilos = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#050810',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-
-  // --- Fundo espacial ---
-  fundo: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  linhaTrajetoria: {
-    position: 'absolute',
-    left: '-20%',
-    width: '140%',
-    height: 1,
-    backgroundColor: '#ffffff0D',
-  },
-
-  // --- Conteúdo ---
-  conteudo: {
-    width: '100%',
-    maxWidth: 380,
-    paddingHorizontal: 24,
-    zIndex: 5,
-  },
-  conteudoMobile: {
-    maxWidth: 420,
-  },
-  eyebrow: {
-    color: '#475569',
-    fontSize: 11,
-    fontFamily: fonts.bodyBold,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 14,
-  },
-  titulo: {
-    color: '#F1F5F9',
-    fontSize: 32,
-    fontFamily: fonts.titleBlack,
-    letterSpacing: -0.5,
-    marginBottom: 8,
-  },
-  subtitulo: {
-    color: '#64748B',
-    fontSize: 14,
-    fontFamily: fonts.body,
-    lineHeight: 22,
-  },
-
-  // --- Formulário ---
-  form: {
-    marginTop: 28,
-    gap: 18,
-  },
-  campo: {
-    gap: 8,
-  },
-  campoRotulo: {
-    color: '#94A3B8',
-    fontSize: 13,
-    fontFamily: fonts.bodySemiBold,
-  },
-  campoCaixa: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    height: 50,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ffffff15',
-    backgroundColor: '#0A0F1A',
-  },
-  campoCaixaFocado: {
-    borderColor: '#38BDF8',
-    backgroundColor: '#0D1117',
-  },
-  campoInput: {
-    flex: 1,
-    color: '#E2E8F0',
-    fontSize: 14,
-    fontFamily: fonts.body,
-    outlineStyle: 'none', 
-  },
-
-  // --- Manter conectado + link ---
   opcoes: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 2,
   },
-  checkboxLinha: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  checkboxLinha: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   checkbox: {
     width: 18,
     height: 18,
@@ -293,71 +127,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxAtivo: {
-    backgroundColor: '#38BDF8',
-    borderColor: '#38BDF8',
-  },
-  checkboxTexto: {
-    color: '#94A3B8',
-    fontSize: 13,
-    fontFamily: fonts.body,
-  },
-  link: {
-    color: '#38BDF8',
-    fontSize: 13,
-    fontFamily: fonts.bodySemiBold,
-  },
-
-  // --- Botão primário ---
-  btnPrimario: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: '#38BDF8',
-    marginTop: 4,
-  },
-  btnPrimarioPressed: {
-    opacity: 0.85,
-  },
-  btnPrimarioTexto: {
-    color: '#050810',
-    fontSize: 15,
-    fontFamily: fonts.bodyBold,
-  },
-
-  // --- Erro de validação ---
-  erroCaixa: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#EF444430',
-    backgroundColor: '#EF444410',
-  },
-  erroTexto: {
-    flex: 1,
-    color: '#FCA5A5',
-    fontSize: 13,
-    fontFamily: fonts.body,
-    lineHeight: 18,
-  },
-
-  // --- Rodapé ---
-  rodape: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  rodapeTexto: {
-    color: '#64748B',
-    fontSize: 13,
-    fontFamily: fonts.body,
-  },
+  checkboxAtivo: { backgroundColor: '#38BDF8', borderColor: '#38BDF8' },
+  checkboxTexto: { color: '#94A3B8', fontSize: 13, fontFamily: fonts.body },
 });

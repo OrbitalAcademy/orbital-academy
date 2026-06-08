@@ -13,12 +13,7 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { fonts } from '../styles/fonts';
-
-const CORES_RISCO = {
-  alto: '#EF4444',
-  medio: '#F59E0B',
-  baixo: '#22C55E',
-};
+import { CORES_RISCO } from '../styles/cores';
 
 const BASE_L = 600;
 const BASE_A = 460;

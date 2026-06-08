@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Animated,
-  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,15 +11,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../styles/fonts';
 import { useBreakpoint } from '../styles/breakpoint';
+import { useEntradaAnimada } from '../hooks/useEntradaAnimada';
 import AcessoBloqueado, { CabecalhoTela } from '../components/acessoBloqueado';
 import MapaRisco from '../components/mapaRisco';
 import BotaoDesativado from '../components/botaoDesativado';
-
-const CORES_RISCO = {
-  alto: '#EF4444',
-  medio: '#F59E0B',
-  baixo: '#22C55E',
-};
+import { CORES_RISCO } from '../styles/cores';
 
 const niveisRisco = [
   { chave: 'alto', rotulo: 'Alto', cor: CORES_RISCO.alto },
@@ -379,19 +374,10 @@ function ConteudoVazio({ isMobile }) {
 
 export default function Console({ logado = false, aoPedirLogin, aoPedirCadastro }) {
   const { isMobile } = useBreakpoint();
-
-  const animOp = useRef(new Animated.Value(0)).current;
-  const animY = useRef(new Animated.Value(16)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(animOp, { toValue: 1, duration: 420, useNativeDriver: true }),
-      Animated.timing(animY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
+  const entrada = useEntradaAnimada();
 
   return (
-    <Animated.View style={[estilos.container, { opacity: animOp, transform: [{ translateY: animY }] }]}>
+    <Animated.View style={[estilos.container, entrada]}>
       <CabecalhoTela
         pagina="console"
         isMobile={isMobile}

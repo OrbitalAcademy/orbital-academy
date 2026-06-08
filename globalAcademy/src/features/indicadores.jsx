@@ -1,18 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { fonts } from '../styles/fonts';
 import { useBreakpoint } from '../styles/breakpoint';
+import { useEntradaAnimada } from '../hooks/useEntradaAnimada';
 import AcessoBloqueado, { CabecalhoTela } from '../components/acessoBloqueado';
 import GraficoImpacto from '../components/graficoImpacto';
+import Painel from '../components/painel';
+import EstadoVazioTela from '../components/estadoVazioTela';
 
 const periodos = ['7 dias', '30 dias', 'Safra'];
 
@@ -52,19 +46,6 @@ const resultados = [
   { area: 'E-22', risco: 'Vigor irregular', acao: 'Reinspeção 48h', status: 'Identificada', statusCor: '#F59E0B', impacto: '—', impactoCor: '#475569' },
   { area: 'F-08', risco: 'Recuperação', acao: 'Nenhuma', status: 'Estável', statusCor: '#64748B', impacto: '+6% vigor', impactoCor: '#22C55E' },
 ];
-
-function Painel({ titulo, direita, children, estilo }) {
-  const { isMobile } = useBreakpoint();
-  return (
-    <View style={[estilos.painel, estilo]}>
-      <View style={[estilos.painelCabecalho, isMobile && direita && estilos.painelCabecalhoMobile]}>
-        <Text style={estilos.painelTitulo}>{titulo}</Text>
-        {direita}
-      </View>
-      <View style={estilos.painelCorpo}>{children}</View>
-    </View>
-  );
-}
 
 function CartaoIndicador({ item }) {
   return (
@@ -281,33 +262,12 @@ function ConteudoComLogin({ isMobile }) {
   );
 }
 
-function ConteudoVazio() {
-  return (
-    <View style={estilos.vazioArea}>
-      <View style={estilos.vazioCaixa}>
-        <Ionicons name="trending-up-outline" size={34} color="#334155" />
-        <Text style={estilos.vazioTitulo}>Sem indicadores no período</Text>
-        <Text style={estilos.vazioSub}>Faça login para ver o impacto consolidado da safra: perda evitada, funil do ciclo e resultados por área.</Text>
-      </View>
-    </View>
-  );
-}
-
 export default function Indicadores({ logado = false, aoPedirLogin, aoPedirCadastro }) {
   const { isMobile } = useBreakpoint();
-
-  const animOp = useRef(new Animated.Value(0)).current;
-  const animY = useRef(new Animated.Value(16)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(animOp, { toValue: 1, duration: 420, useNativeDriver: true }),
-      Animated.timing(animY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
+  const entrada = useEntradaAnimada();
 
   return (
-    <Animated.View style={[estilos.container, { opacity: animOp, transform: [{ translateY: animY }] }]}>
+    <Animated.View style={[estilos.container, entrada]}>
       <CabecalhoTela
         pagina="indicadores"
         isMobile={isMobile}
@@ -315,7 +275,15 @@ export default function Indicadores({ logado = false, aoPedirLogin, aoPedirCadas
         direita={logado && !isMobile ? <CabecalhoAcoes /> : null}
       />
       <AcessoBloqueado logado={logado} aoPedirLogin={aoPedirLogin} aoPedirCadastro={aoPedirCadastro}>
-        {logado ? <ConteudoComLogin isMobile={isMobile} /> : <ConteudoVazio />}
+        {logado ? (
+          <ConteudoComLogin isMobile={isMobile} />
+        ) : (
+          <EstadoVazioTela
+            icone="trending-up-outline"
+            titulo="Sem indicadores no período"
+            sub="Faça login para ver o impacto consolidado da safra: perda evitada, funil do ciclo e resultados por área."
+          />
+        )}
       </AcessoBloqueado>
     </Animated.View>
   );
@@ -361,31 +329,6 @@ const estilos = StyleSheet.create({
   cartaoUnidade: { color: '#94A3B8', fontSize: 13, fontFamily: fonts.body, marginBottom: 4 },
   cartaoSub: { color: '#64748B', fontSize: 12, fontFamily: fonts.body },
 
-  painel: {
-    backgroundColor: '#0A0F1A',
-    borderWidth: 1,
-    borderColor: '#ffffff0D',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  painelCabecalho: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff0D',
-  },
-  painelCabecalhoMobile: { flexDirection: 'column', alignItems: 'flex-start', gap: 10 },
-  painelTitulo: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontFamily: fonts.bodyBold,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
   painelRotuloDir: {
     color: '#475569',
     fontSize: 11,
@@ -393,7 +336,6 @@ const estilos = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
-  painelCorpo: { padding: 18, gap: 16 },
   corpoTexto: { color: '#94A3B8', fontSize: 14, fontFamily: fonts.body, lineHeight: 23 },
   forte: { color: '#F1F5F9', fontFamily: fonts.bodyBold },
   forteClaro: { color: '#E2E8F0', fontFamily: fonts.bodyBold },
@@ -517,9 +459,4 @@ const estilos = StyleSheet.create({
   },
   cicloPonto: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
   cicloTexto: { color: '#94A3B8', fontSize: 13, fontFamily: fonts.bodySemiBold },
-
-  vazioArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  vazioCaixa: { maxWidth: 380, alignItems: 'center', gap: 12 },
-  vazioTitulo: { color: '#94A3B8', fontSize: 16, fontFamily: fonts.bodySemiBold, textAlign: 'center' },
-  vazioSub: { color: '#64748B', fontSize: 13, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },
 });

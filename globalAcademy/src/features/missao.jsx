@@ -1,24 +1,14 @@
-import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Easing,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../styles/fonts';
 import { useBreakpoint } from '../styles/breakpoint';
+import { useEntradaAnimada } from '../hooks/useEntradaAnimada';
 import AcessoBloqueado, { CabecalhoTela } from '../components/acessoBloqueado';
 import GraficoPrevisao from '../components/graficoPrevisao';
 import BotaoDesativado from '../components/botaoDesativado';
-
-const CORES_RISCO = {
-  alto: '#EF4444',
-  medio: '#F59E0B',
-  baixo: '#22C55E',
-};
+import Painel from '../components/painel';
+import EstadoVazioTela from '../components/estadoVazioTela';
+import { CORES_RISCO } from '../styles/cores';
 
 const briefingMetricas = [
   { rotulo: 'NDVI', valor: '0,38', sub: '↓ -27% em 4d', cor: '#EF4444' },
@@ -66,19 +56,6 @@ const ciclo = [
   { titulo: 'Execução', sub: 'plano aplicado', estado: 'atual', num: 3 },
   { titulo: 'Medida', sub: 'impacto · 14d', estado: 'futuro', num: 4 },
 ];
-
-function Painel({ titulo, direita, children, estilo }) {
-  const { isMobile } = useBreakpoint();
-  return (
-    <View style={[estilos.painel, estilo]}>
-      <View style={[estilos.painelCabecalho, isMobile && direita && estilos.painelCabecalhoMobile]}>
-        <Text style={estilos.painelTitulo}>{titulo}</Text>
-        {direita}
-      </View>
-      <View style={estilos.painelCorpo}>{children}</View>
-    </View>
-  );
-}
 
 function CartaoMetrica({ item }) {
   const { isMobile } = useBreakpoint();
@@ -278,18 +255,6 @@ function ConteudoComLogin({ isMobile }) {
   );
 }
 
-function ConteudoVazio() {
-  return (
-    <View style={estilos.vazioArea}>
-      <View style={estilos.vazioCaixa}>
-        <Ionicons name="settings-outline" size={34} color="#334155" />
-        <Text style={estilos.vazioTitulo}>Nenhuma missão selecionada</Text>
-        <Text style={estilos.vazioSub}>Faça login e escolha uma área no Console para abrir o detalhe da missão.</Text>
-      </View>
-    </View>
-  );
-}
-
 function LegendaItem({ cor, rotulo, tracejado }) {
   return (
     <View style={estilos.legendaItem}>
@@ -301,22 +266,21 @@ function LegendaItem({ cor, rotulo, tracejado }) {
 
 export default function Missao({ logado = false, aoPedirLogin, aoPedirCadastro }) {
   const { isMobile } = useBreakpoint();
-
-  const animOp = useRef(new Animated.Value(0)).current;
-  const animY = useRef(new Animated.Value(16)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(animOp, { toValue: 1, duration: 420, useNativeDriver: true }),
-      Animated.timing(animY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
+  const entrada = useEntradaAnimada();
 
   return (
-    <Animated.View style={[estilos.container, { opacity: animOp, transform: [{ translateY: animY }] }]}>
+    <Animated.View style={[estilos.container, entrada]}>
       <CabecalhoTela pagina="missao" isMobile={isMobile} />
       <AcessoBloqueado logado={logado} aoPedirLogin={aoPedirLogin} aoPedirCadastro={aoPedirCadastro}>
-        {logado ? <ConteudoComLogin isMobile={isMobile} /> : <ConteudoVazio />}
+        {logado ? (
+          <ConteudoComLogin isMobile={isMobile} />
+        ) : (
+          <EstadoVazioTela
+            icone="settings-outline"
+            titulo="Nenhuma missão selecionada"
+            sub="Faça login e escolha uma área no Console para abrir o detalhe da missão."
+          />
+        )}
       </AcessoBloqueado>
     </Animated.View>
   );
@@ -331,35 +295,6 @@ const estilos = StyleSheet.create({
   colunaEsquerda: { flex: 1.7, gap: 16 },
   colunaDireita: { flex: 1, gap: 16, alignSelf: 'stretch' },
 
-  painel: {
-    backgroundColor: '#0A0F1A',
-    borderWidth: 1,
-    borderColor: '#ffffff0D',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  painelCabecalho: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff0D',
-  },
-  painelCabecalhoMobile: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  painelTitulo: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontFamily: fonts.bodyBold,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
   painelRotuloDir: {
     color: '#475569',
     fontSize: 11,
@@ -367,7 +302,6 @@ const estilos = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
-  painelCorpo: { padding: 18, gap: 18 },
   corpoTexto: {
     color: '#94A3B8',
     fontSize: 14,
@@ -576,20 +510,4 @@ const estilos = StyleSheet.create({
   },
   badgeAtualTexto: { color: '#38BDF8', fontSize: 10, fontFamily: fonts.bodyBold, letterSpacing: 0.8 },
   passoSub: { color: '#64748B', fontSize: 12, fontFamily: fonts.body },
-
-  vazioArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  vazioCaixa: { maxWidth: 360, alignItems: 'center', gap: 12 },
-  vazioTitulo: {
-    color: '#94A3B8',
-    fontSize: 16,
-    fontFamily: fonts.bodySemiBold,
-    textAlign: 'center',
-  },
-  vazioSub: {
-    color: '#64748B',
-    fontSize: 13,
-    fontFamily: fonts.body,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
 });

@@ -111,8 +111,6 @@ export default function Sidebar({ ativo = 'home', aoSelecionar, aberto = false, 
         <Animated.View style={[estilos.textoSlot, { opacity: opacidadeTexto }]}>
           <Text style={estilos.cabecalhoNome} numberOfLines={1}>Orbital Academy</Text>
           <Text style={estilos.cabecalhoSub} numberOfLines={1}>Engenharia de Software · 3º sem</Text>
-          <View style={estilos.statusBadge}>
-          </View>
         </Animated.View>
       </Pressable>
 
@@ -163,11 +161,6 @@ export default function Sidebar({ ativo = 'home', aoSelecionar, aberto = false, 
                     <Text style={estilos.itemSubtitulo} numberOfLines={1}>{item.subtitulo}</Text>
                   </Animated.View>
 
-                  {item.badge != null && (
-                    <Animated.View style={[estilos.badge, { opacity: opacidadeTexto }]}>
-                      <Text style={estilos.badgeTexto}>{item.badge}</Text>
-                    </Animated.View>
-                  )}
                 </Pressable>
               );
             })}
@@ -176,7 +169,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar, aberto = false, 
       </View>
 
       {/* Rodapé — logado mostra usuário + sair; deslogado leva ao login */}
-      <View style={estilos.rodape}>
+      <View>
         <View style={estilos.divisor} />
         {logado ? (
           <Pressable
@@ -289,22 +282,6 @@ const estilos = StyleSheet.create({
     color: '#64748B',
     fontSize: 11,
   },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  statusPonto: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#22C55E',
-  },
-  statusTexto: {
-    color: '#64748B',
-    fontSize: 11,
-  },
 
   // Divisor
   divisor: {
@@ -353,20 +330,7 @@ const estilos = StyleSheet.create({
   itemTituloAtivo: { color: '#F1F5F9', fontWeight: '600' },
   itemSubtitulo: { color: '#334155', fontSize: 11 },
 
-  // Badge
-  badge: {
-    backgroundColor: '#1E293B',
-    borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: '#ffffff10',
-    marginLeft: 4,
-  },
-  badgeTexto: { color: '#94A3B8', fontSize: 11, fontWeight: '600' },
-
   // Rodapé
-  rodape: {},
   loginTitulo: { color: '#94A3B8', fontSize: 13, fontWeight: '600' },
   loginSub: { color: '#334155', fontSize: 11 },
 });

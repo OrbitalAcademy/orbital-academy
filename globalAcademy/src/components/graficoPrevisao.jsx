@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import Svg, {
   Circle,
   Line,
-  Path,
   Polyline,
   Text as SvgText,
 } from 'react-native-svg';

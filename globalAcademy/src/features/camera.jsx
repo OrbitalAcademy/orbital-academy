@@ -1,24 +1,12 @@
-import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Easing,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../styles/fonts';
 import { useBreakpoint } from '../styles/breakpoint';
+import { useEntradaAnimada } from '../hooks/useEntradaAnimada';
 import AcessoBloqueado, { CabecalhoTela } from '../components/acessoBloqueado';
 import BotaoDesativado from '../components/botaoDesativado';
+import Painel from '../components/painel';
 
-// Câmera de Validação (visão computacional).
-// Dois estados, igual às demais páginas da sidebar:
-//  - SEM login  -> conteúdo bloqueado com o aviso "Faça login para visualizar tudo".
-//  - COM login  -> câmera + classes + pipeline liberados (mock A-07).
-
-// Classes que o modelo de visão consegue detectar (legenda — descritivo).
 const classes = [
   { rotulo: 'Saudável', cor: '#22C55E', desc: 'Vegetação dentro do padrão' },
   { rotulo: 'Stress hídrico', cor: '#F59E0B', desc: 'Déficit de água visível' },
@@ -26,26 +14,12 @@ const classes = [
   { rotulo: 'Doença foliar', cor: '#EAB308', desc: 'Manchas ou necrose' },
 ];
 
-// Etapas do pipeline de validação.
 const pipeline = [
   { n: '1', titulo: 'Captura do frame', sub: 'sensor de campo' },
   { n: '2', titulo: 'Inferência local', metodo: 'POST', cor: '#A855F7', rota: '/validar' },
   { n: '3', titulo: 'Atualiza missão', metodo: 'PATCH', cor: '#22C55E', rota: '/missoes/{id}/status' },
 ];
 
-// --- Painel base (mesmo padrão do Console) ---
-function Painel({ titulo, children, estilo }) {
-  return (
-    <View style={[estilos.painel, estilo]}>
-      <View style={estilos.painelCabecalho}>
-        <Text style={estilos.painelTitulo}>{titulo}</Text>
-      </View>
-      <View style={estilos.painelCorpo}>{children}</View>
-    </View>
-  );
-}
-
-// --- Visor da câmera (inativo, com os cantos de mira) ---
 function Visor() {
   return (
     <View style={estilos.visor}>
@@ -62,7 +36,6 @@ function Visor() {
   );
 }
 
-// --- Bloco da câmera (visor + ações) ---
 function BlocoCamera() {
   return (
     <View style={estilos.blocoCamera}>
@@ -80,7 +53,6 @@ function BlocoCamera() {
   );
 }
 
-// --- Coluna lateral (por que existe + classes + pipeline) ---
 function ColunaInfo() {
   return (
     <View style={estilos.coluna}>
@@ -137,16 +109,7 @@ function ColunaInfo() {
 
 export default function Camera({ logado = false, aoPedirLogin, aoPedirCadastro }) {
   const { isMobile } = useBreakpoint();
-
-  const animOp = useRef(new Animated.Value(0)).current;
-  const animY = useRef(new Animated.Value(16)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(animOp, { toValue: 1, duration: 420, useNativeDriver: true }),
-      Animated.timing(animY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
+  const entrada = useEntradaAnimada();
 
   const conteudo = isMobile ? (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={estilos.corpoMobile}>
@@ -163,7 +126,7 @@ export default function Camera({ logado = false, aoPedirLogin, aoPedirCadastro }
   );
 
   return (
-    <Animated.View style={[estilos.container, { opacity: animOp, transform: [{ translateY: animY }] }]}>
+    <Animated.View style={[estilos.container, entrada]}>
       <CabecalhoTela pagina="camera" isMobile={isMobile} />
 
       <AcessoBloqueado logado={logado} aoPedirLogin={aoPedirLogin} aoPedirCadastro={aoPedirCadastro}>
@@ -251,28 +214,6 @@ const estilos = StyleSheet.create({
   },
   btnLimparTexto: { color: '#94A3B8', fontSize: 14, fontFamily: fonts.bodySemiBold },
 
-  // --- Painel base ---
-  painel: {
-    backgroundColor: '#0A0F1A',
-    borderWidth: 1,
-    borderColor: '#ffffff0D',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  painelCabecalho: {
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff0D',
-  },
-  painelTitulo: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontFamily: fonts.bodyBold,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  painelCorpo: { padding: 18 },
   corpoTexto: {
     color: '#94A3B8',
     fontSize: 14,
