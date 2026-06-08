@@ -214,7 +214,7 @@ export default function Sidebar({ ativo = 'home', aoSelecionar, aberto = false, 
 
 const estilos = StyleSheet.create({
   container: {
-    backgroundColor: '#0A0A0A',
+    backgroundColor: '#0A0F1A',
     borderRightWidth: 1,
     borderRightColor: '#ffffff0D',
     overflow: 'hidden',

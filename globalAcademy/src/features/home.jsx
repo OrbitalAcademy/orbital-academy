@@ -16,6 +16,7 @@ import Console from './console';
 import Missao from './missao';
 import Camera from './camera';
 import Indicadores from './indicadores';
+import Espacoteca from './espacoteca';
 import Login from './login';
 import Cadastro from './cadastro';
 import { fonts } from '../styles/fonts';
@@ -439,57 +440,48 @@ const componentesData = [
   },
 ];
 
-function CardArquitetura({ item, isMobile }) {
-  const [aberto, setAberto] = useState(false);
-  const animOverlay = useRef(new Animated.Value(0)).current;
+function CardArquitetura({ item, aberto, aoAlternar }) {
+  const animSeta = useRef(new Animated.Value(0)).current;
 
-  function revelar(visivel) {
-    Animated.timing(animOverlay, {
-      toValue: visivel ? 1 : 0,
-      duration: visivel ? 200 : 160,
+  useEffect(() => {
+    Animated.timing(animSeta, {
+      toValue: aberto ? 1 : 0,
+      duration: 200,
+      easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }
+  }, [aberto]);
 
-  if (isMobile) {
-    return (
-      <Pressable style={[estilos.arqCard, estilos.arqCardMobile]} onPress={() => setAberto((v) => !v)}>
-        <View style={estilos.arqCardIcone}>
-          <Ionicons name={item.icone} size={20} color="#208AEF" />
-        </View>
-        <Text style={estilos.arqCardRotulo}>{item.titulo}</Text>
-        <Text style={estilos.arqCardTagline}>{item.tagline}</Text>
-        {aberto && <Text style={estilos.arqCardDescricao}>{item.descricao}</Text>}
-        <View style={estilos.arqCardHintRow}>
-          <Text style={estilos.arqCardHint}>{aberto ? 'Tocar para recolher' : 'Tocar para ver mais'}</Text>
-          <Ionicons name={aberto ? 'chevron-up-outline' : 'chevron-down-outline'} size={14} color="#208AEF" />
-        </View>
-      </Pressable>
-    );
-  }
+  const rotacaoSeta = animSeta.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
 
   return (
-    <Pressable style={estilos.arqCard} onHoverIn={() => revelar(true)} onHoverOut={() => revelar(false)}>
-      <View style={estilos.arqCardIcone}>
-        <Ionicons name={item.icone} size={20} color="#208AEF" />
-      </View>
-      <Text style={estilos.arqCardRotulo}>{item.titulo}</Text>
-      <Text style={estilos.arqCardTagline}>{item.tagline}</Text>
-      <View style={estilos.arqCardHintRow}>
-        <Text style={estilos.arqCardHint}>Passe o mouse para ver</Text>
-        <Ionicons name="arrow-forward-outline" size={14} color="#208AEF" />
-      </View>
+    <View style={[estilos.arqItem, aberto && estilos.arqItemAberto]}>
+      <Pressable style={estilos.arqItemTopo} onPress={aoAlternar}>
+        <View style={[estilos.arqCardIcone, aberto && estilos.arqCardIconeAberto]}>
+          <Ionicons name={item.icone} size={20} color="#208AEF" />
+        </View>
+        <View style={estilos.arqItemTextos}>
+          <Text style={estilos.arqCardRotulo}>{item.titulo}</Text>
+          <Text style={estilos.arqCardTagline}>{item.tagline}</Text>
+        </View>
+        <Animated.View style={{ transform: [{ rotate: rotacaoSeta }] }}>
+          <Ionicons name="chevron-down-outline" size={20} color={aberto ? '#208AEF' : '#475569'} />
+        </Animated.View>
+      </Pressable>
 
-      <Animated.View pointerEvents="none" style={[estilos.arqCardOverlay, { opacity: animOverlay }]}>
-        <Text style={estilos.arqCardRotulo}>{item.titulo}</Text>
-        <Text style={estilos.arqCardDescricao}>{item.descricao}</Text>
-      </Animated.View>
-    </Pressable>
+      {aberto && (
+        <View style={estilos.arqItemCorpo}>
+          <Text style={estilos.arqCardDescricao}>{item.descricao}</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
 function SecaoArquitetura() {
   const { isMobile, height } = useBreakpoint();
+  const [abertoId, setAbertoId] = useState(componentesData[0].id);
+
   return (
     <View style={[estilos.secao04Wrapper, { minHeight: height }, isMobile && estilos.secao04WrapperMobile]}>
 
@@ -501,13 +493,17 @@ function SecaoArquitetura() {
         <Text style={estilos.arqTexto}>
           O Orbital Academy não é um sistema monolítico. E sim uma arquitetura de oito componentes
           integrados, cada um com papel preciso no ciclo de decisão. Retire qualquer peça e o ciclo para.
-          {'\n\n'}
         </Text>
       </View>
 
-      <View style={[estilos.arqGrid, isMobile && estilos.arqGridMobile]}>
+      <View style={estilos.arqLista}>
         {componentesData.map((item) => (
-          <CardArquitetura key={item.id} item={item} isMobile={isMobile} />
+          <CardArquitetura
+            key={item.id}
+            item={item}
+            aberto={abertoId === item.id}
+            aoAlternar={() => setAbertoId((atual) => (atual === item.id ? null : item.id))}
+          />
         ))}
       </View>
 
@@ -772,6 +768,8 @@ export default function Home() {
           <Camera logado={logado} aoPedirLogin={() => setAtivo('login')} aoPedirCadastro={() => setAtivo('cadastro')} />
         ) : ativo === 'indicadores' ? (
           <Indicadores logado={logado} aoPedirLogin={() => setAtivo('login')} aoPedirCadastro={() => setAtivo('cadastro')} />
+        ) : ativo === 'espacoteca' ? (
+          <Espacoteca logado={logado} aoPedirLogin={() => setAtivo('login')} aoPedirCadastro={() => setAtivo('cadastro')} />
         ) : (
           <View style={estilos.telaVazia}>
             <Text style={estilos.telaVaziaTexto}>{ativo}</Text>
@@ -1245,26 +1243,37 @@ const estilos = StyleSheet.create({
     width: '100%',
     maxWidth: 800,
   },
-  arqGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 16,
+  arqLista: {
     width: '100%',
-    maxWidth: 1160,
+    maxWidth: 820,
     alignSelf: 'center',
+    gap: 12,
   },
-  arqCard: {
-    width: '23%',
-    height: 500,
-    overflow: 'hidden',
-    position: 'relative',
+  arqItem: {
     backgroundColor: '#0A0F1A',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#ffffff0D',
-    padding: 24,
-    gap: 12,
+    overflow: 'hidden',
+  },
+  arqItemAberto: {
+    borderColor: '#208AEF30',
+    backgroundColor: '#0B1220',
+  },
+  arqItemTopo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 20,
+  },
+  arqItemTextos: {
+    flex: 1,
+    gap: 4,
+  },
+  arqItemCorpo: {
+    paddingLeft: 80,
+    paddingRight: 24,
+    paddingBottom: 22,
   },
   arqCardIcone: {
     width: 44,
@@ -1275,6 +1284,10 @@ const estilos = StyleSheet.create({
     backgroundColor: '#208AEF10',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  arqCardIconeAberto: {
+    borderColor: '#208AEF60',
+    backgroundColor: '#208AEF20',
   },
   arqCardRotulo: {
     color: '#E2E8F0',
@@ -1289,32 +1302,9 @@ const estilos = StyleSheet.create({
   },
   arqCardDescricao: {
     color: '#94A3B8',
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: fonts.body,
-    lineHeight: 20,
-  },
-  arqCardHintRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 'auto',
-  },
-  arqCardHint: {
-    color: '#208AEF',
-    fontSize: 12,
-    fontFamily: fonts.bodySemiBold,
-  },
-  arqCardOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#0A0F1A',
-    borderRadius: 16,
-    padding: 24,
-    gap: 10,
-    justifyContent: 'center',
+    lineHeight: 23,
   },
 
   // ---- Variantes mobile (< 1024px) ----
@@ -1325,15 +1315,6 @@ const estilos = StyleSheet.create({
   arqTituloMobile: {
     fontSize: 28,
     lineHeight: 36,
-  },
-  arqGridMobile: {
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    maxWidth: '100%',
-  },
-  arqCardMobile: {
-    width: '100%',
-    height: 'auto',
   },
   secao01WrapperMobile: {
     paddingHorizontal: 20,
