@@ -8,22 +8,6 @@ Plataforma que pega o que a NASA e o INPE já enxergam lá de cima — risco em 
 
 ---
 
-## 📑 Sumário
-
-- [Sobre](#-sobre)
-- [Telas](#-telas)
-- [Arquitetura da solução](#-arquitetura-da-solução)
-- [Stack](#-stack)
-- [Estrutura de pastas](#-estrutura-de-pastas)
-- [Como rodar](#-como-rodar)
-- [Acesso de teste](#-acesso-de-teste)
-- [Deploy](#-deploy)
-- [Convenções de código](#-convenções-de-código)
-- [Time](#-time)
-- [Licença](#-licença)
-
----
-
 ## 🌎 Sobre
 
 O dado espacial é abundante, gratuito e cada vez mais preciso. O que ainda é escasso é a **capacidade de transformar esse dado em ação** sob recurso limitado, em tempo real, por pessoas que não têm formação em sensoriamento remoto.
@@ -33,22 +17,6 @@ O Orbital Academy não substitui o especialista técnico: ele torna a decisão c
 > **Ver → Prever → Validar → Decidir → Otimizar → Agir → Medir**
 
 O app é **responsivo** (desktop e mobile), feito em **React Native + Expo** rodando também na **web**.
-
----
-
-## 🖥️ Telas
-
-| Tela | Descrição |
-| --- | --- |
-| **Home** | Landing page do projeto: hero, o que é, como funciona (carrossel), tese e personas, arquitetura da solução (accordion) e time. |
-| **Console de Missão** | Mapa de risco em tempo real, ranking de áreas priorizadas pelo modelo e fila de missões do dia. |
-| **Detalhe da Missão** | Briefing, previsão de risco (NDVI · 7 dias), otimização de recursos e ciclo da missão. |
-| **Câmera de Validação** | Visão computacional para *ground-truth* em campo (classes detectáveis + pipeline de validação). |
-| **Indicadores de Impacto** | Perda evitada, funil do ciclo, distribuição por tipo de risco e resultados por área. |
-| **Espaçoteca** | Acervo de conteúdo: trilhas de aprendizado, glossário, estudos de caso e leituras essenciais. |
-| **Login / Cadastro** | Acesso com sessão persistida (AsyncStorage). |
-
-Cada página da sidebar tem **dois estados**: sem login (conteúdo bloqueado com gate de acesso) e com login (dados liberados).
 
 ---
 
@@ -141,9 +109,3 @@ Também é possível **criar uma conta** pela tela de Cadastro — os usuários 
 | [Mariana Neugebauer Dourado](https://www.linkedin.com/in/neugema/) | RM550494 |
 
 > Cinco pessoas, oito matérias, uma arquitetura.
-
----
-
-## 📄 Licença
-
-Projeto acadêmico desenvolvido para a Global Solution da FIAP.
