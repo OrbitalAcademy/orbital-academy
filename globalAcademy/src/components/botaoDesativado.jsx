@@ -5,6 +5,7 @@ import { fonts } from '../styles/fonts';
 export default function BotaoDesativado({
   children,
   estilo,
+  estiloWrap,
   texto = 'Botão desativado no momento',
   posicao = 'cima',
 }) {
@@ -16,7 +17,7 @@ export default function BotaoDesativado({
       : {};
 
   return (
-    <View style={estilos.wrap}>
+    <View style={[estilos.wrap, estiloWrap]}>
       <Pressable
         style={[estilo, estilos.desativado, Platform.OS === 'web' && { cursor: 'not-allowed' }]}
         onPress={() => setVisivel((v) => !v)}
